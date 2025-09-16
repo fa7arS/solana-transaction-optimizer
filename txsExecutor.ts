@@ -17,13 +17,12 @@ export const createAndSendV0Tx = async (txInstructions: TransactionInstruction[]
 
     console.log("here is transaction sizee---", transaction.serialize().length);
 
-    // const simulation = await connection.simulateTransaction(transaction);
-    // console.log("here is simulation result----", simulation);
+    const simulation = await connection.simulateTransaction(transaction);
+    console.log("here is simulation result----", simulation);
 
-    // const txid = await connection.sendTransaction(transaction, { maxRetries: 5 });
+    const txid = await connection.sendTransaction(transaction, { maxRetries: 5 });
 
-    // const confirmation = await confirmTransaction(connection, txid);
-    // console.log('LUT transaction successfully confirmed!', '\n', `https://explorer.solana.com/tx/${txid}`);
+    console.log('LUT transaction successfully confirmed!', '\n', `https://explorer.solana.com/tx/${txid}`);
     // return confirmation.err == null
 
     return true;

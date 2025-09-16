@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { PumpFunSDK } from "latest-pumpfun-sdk";
 import BN from "bn.js";
 import { createAndSendV0Tx } from "./txsExecutor";
+import { createLUT } from "./createLookupTable";
 
 dotenv.config();
 
@@ -11,7 +12,7 @@ dotenv.config();
 const connection = new Connection(clusterApiUrl("mainnet-beta"),"confirmed");
 const signer = Keypair.fromSecretKey(bs58.decode(process.env.SIGNER_KEY!));
 const sdk = new PumpFunSDK(connection);
-
+const lookup_address = new PublicKey("E4b5B9C3hapUZY7qfbLXTsPdaRzUT1HbT7uGRS19DXyL");
 
 const normalTxs = async() =>{
   const mint = new PublicKey("9rwU5ex3PAp6TZ4PQ68nnGHtcRmnD5Hyo4QzYWZVpump")
@@ -39,8 +40,14 @@ const normalTxs = async() =>{
   }
 }
 
+const lookupTxs = async() =>{
+
+//    const lookup_address =  await createLUT(signer,connection);
+//    console.log("here is teh lookup address---", lookup_address?.toBase58());
 
 
+}
 
 
-normalTxs();
+// normalTxs();
+lookupTxs();
