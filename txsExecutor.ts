@@ -10,14 +10,15 @@ export const createAndSendV0Tx = async (txInstructions: TransactionInstruction[]
       instructions: txInstructions
     }).compileToV0Message();
     const transaction = new VersionedTransaction(messageV0);
-
     transaction.sign([kp]);
 
 
 
-    const simulation = await connection.simulateTransaction(transaction);
 
-    console.log("here is simulation result----", simulation);
+    console.log("here is transaction sizee---", transaction.serialize().length);
+
+    // const simulation = await connection.simulateTransaction(transaction);
+    // console.log("here is simulation result----", simulation);
 
     // const txid = await connection.sendTransaction(transaction, { maxRetries: 5 });
 
