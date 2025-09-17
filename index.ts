@@ -20,13 +20,11 @@ const creator = new PublicKey("Gqd1HsMwhNMHtqL1iZ2M23DriBPJdnbJR8PEBUCPDvB");
 
 const normalTxs = async() =>{
 
-
-  
   const solAmount = 0.0001;
   const bonding_curve_data = await sdk.fetchBondingCurve(mint);
   const tokenAmount = sdk.getTokenAmount(bonding_curve_data, solAmount);
 
-  console.log("💰 Token amount to receive:", tokenAmount);
+  console.log("Token amount to receive:", tokenAmount);
 
   const global = await sdk.fetchGlobal();
 
@@ -40,14 +38,33 @@ const normalTxs = async() =>{
   );
 
   if (tx1.success) {
-    createAndSendV0Tx([...tx1.data],signer,connection);
+
+    let latestBlockhash = await connection.getLatestBlockhash();
+
+
+    const messageV0 = new TransactionMessage({
+      payerKey: signer.publicKey,
+      recentBlockhash: latestBlockhash.blockhash,
+      instructions: [...tx1.data]
+    }).compileToV0Message();
+
+    const transaction = new VersionedTransaction(messageV0);
+    transaction.sign([signer]);
+
+    console.log("transaction size ---", transaction.serialize().byteLength);
+
+    // const simulation = await connection.simulateTransaction(transaction);
+    // console.log("here is simulation res---", simulation);
   }
 }
 
-const lookupTxs = async() =>{
+const lookupTableAddressCreation = async() =>{
 
-//    const lookup_address =  await createLUT(signer,connection);
-//    console.log("here is teh lookup address---", lookup_address?.toBase58());
+   const lookup_address =  await createLUT(signer,connection);
+
+       if(!lookup_address) throw("no account find---");
+
+   console.log("here is teh lookup address---", lookup_address?.toBase58());
 
     const lookupTableAccount = (
         await connection.getAddressLookupTable(lookup_address)
@@ -93,8 +110,6 @@ const lookupTxs = async() =>{
         creator_vault
     );   
 
-
-
       const extendInstruction = AddressLookupTableProgram.extendLookupTable({
             lookupTable: lookup_address,
             authority: signer.publicKey,
@@ -112,7 +127,7 @@ const buyWithLookup = async() => {
   const bonding_curve_data = await sdk.fetchBondingCurve(mint);
   const tokenAmount = sdk.getTokenAmount(bonding_curve_data, solAmount);
 
-  console.log("💰 Token amount to receive:", tokenAmount);
+  console.log("Token amount to receive:", tokenAmount);
 
   const global = await sdk.fetchGlobal();
 
@@ -144,15 +159,14 @@ const buyWithLookup = async() => {
       payerKey: signer.publicKey,
       recentBlockhash: latestBlockhash.blockhash,
       instructions: [...tx1.data]
-    }).compileToV0Message([lookupTableAccount]);
+    }).compileToV0Message();
 
     const transaction = new VersionedTransaction(messageV0);
     transaction.sign([signer]);
 
-    console.log("transaction size---", transaction.serialize().byteLength);
+    console.log("transaction size ---", transaction.serialize().byteLength);
 
     // const simulation = await connection.simulateTransaction(transaction);
-
     // console.log("here is simulation res---", simulation);
   }
 
