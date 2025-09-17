@@ -38,7 +38,6 @@ export const createLUT = async (mainKP: Keypair,connection:Connection) => {
         if(!res) throw new Error("Failed to create LUT");
 
 
-
         console.log("LUT created successfully");
         console.log("Please wait for about 15 seconds...");
 

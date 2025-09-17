@@ -51,7 +51,7 @@ const normalTxs = async() =>{
     const transaction = new VersionedTransaction(messageV0);
     transaction.sign([signer]);
 
-    console.log("transaction size ---", transaction.serialize().byteLength);
+    console.log("without lookup table the transaction size ---", transaction.serialize().byteLength);
 
     // const simulation = await connection.simulateTransaction(transaction);
     // console.log("here is simulation res---", simulation);
@@ -62,7 +62,7 @@ const lookupTableAddressCreation = async() =>{
 
    const lookup_address =  await createLUT(signer,connection);
 
-       if(!lookup_address) throw("no account find---");
+   if(!lookup_address) throw("no account find---");
 
    console.log("here is teh lookup address---", lookup_address?.toBase58());
 
@@ -88,7 +88,7 @@ const lookupTableAddressCreation = async() =>{
     )[0];
     const event_authority = new PublicKey("Ce6TQqeHC9p8KetsN6JsjHK7UTZk7nasjjnr7XxXp9F1");
     const global_volume_accumulator = new PublicKey("Hq2wp8uJ9jCPsYgNHex8RtqdvMPfVGoYwjvF1ATiwn2Y");
-    const user_volume_accumulator = new PublicKey("28GfGdLbF6o2qmTuBLrr5HUnYJdUsj8ZARDu26hQRyrG");
+    const user_volume_accumulator = new PublicKey("28GfGdLbF6o2qmTuBLrr5HUnYJdUsj8ZARDu26hQRyrG");   // this account can vary for diffrent wallet address
     const fee_config = new PublicKey("8Wf5TiAheLUqBrKXeYg2JtAFFMWtKdG2BSFgqUcPVwTt");
 
     accounts.push(
@@ -150,7 +150,7 @@ const buyWithLookup = async() => {
 
 
     if(!lookupTableAccount) throw("no account find---");
-    console.log("here is all address---", lookupTableAccount);
+    // console.log("here is all address---", lookupTableAccount);
 
     let latestBlockhash = await connection.getLatestBlockhash();
 
@@ -159,12 +159,12 @@ const buyWithLookup = async() => {
       payerKey: signer.publicKey,
       recentBlockhash: latestBlockhash.blockhash,
       instructions: [...tx1.data]
-    }).compileToV0Message();
+    }).compileToV0Message([lookupTableAccount]);
 
     const transaction = new VersionedTransaction(messageV0);
     transaction.sign([signer]);
 
-    console.log("transaction size ---", transaction.serialize().byteLength);
+    console.log("with lookup table the transaction size ---", transaction.serialize().byteLength);
 
     // const simulation = await connection.simulateTransaction(transaction);
     // console.log("here is simulation res---", simulation);

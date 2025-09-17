@@ -152,7 +152,6 @@ const lookupTxs = async () => {
   );
 
   // adding all the atas of all signers
-
   for (const keypair of all_signers) {
     const user_ata = await getAssociatedTokenAddress(mint, keypair.publicKey);
     accounts.push(user_ata);
