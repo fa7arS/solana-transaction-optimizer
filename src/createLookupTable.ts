@@ -1,5 +1,5 @@
 import { AddressLookupTableProgram, ComputeBudgetProgram, Connection, Keypair } from "@solana/web3.js"
-import { createAndSendV0Tx } from "./txsExecutor";
+import { createAndSendV0Tx } from "../txsExecutor";
 
 
 

@@ -1,4 +1,4 @@
-# Solana Lookup Table Optimization Project
+# Solana Transaction Optimizer
 
 A comprehensive TypeScript project demonstrating the efficiency benefits of using Solana Address Lookup Tables (ALTs) for transaction optimization, specifically focused on PumpFun token purchases and bundle transactions.
 
@@ -31,7 +31,7 @@ This project showcases how Solana Address Lookup Tables can significantly reduce
 ## 📁 Project Structure
 
 ```
-solana-lookup-table/
+solana-transaction-optimizer/
 ├── index.ts                    # Main entry point with single buyer examples
 ├── bundle_buys.ts             # Bundle transaction implementations
 ├── single_buy_comparison.ts   # Detailed comparison analysis
@@ -47,7 +47,7 @@ solana-lookup-table/
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd solana-lookup-table
+   cd solana-transaction-optimizer
    ```
 
 2. **Install dependencies**

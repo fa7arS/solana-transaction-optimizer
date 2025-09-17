@@ -16,7 +16,7 @@ import bs58 from "bs58";
 import dotenv from "dotenv";
 import { PumpFunSDK } from "latest-pumpfun-sdk";
 import BN from "bn.js";
-import { createAndSendV0Tx } from "./txsExecutor";
+import { createAndSendV0Tx } from "../txsExecutor";
 import { createLUT } from "./createLookupTable";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
