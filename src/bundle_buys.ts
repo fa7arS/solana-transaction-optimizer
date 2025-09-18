@@ -16,7 +16,7 @@ import bs58 from "bs58";
 import dotenv from "dotenv";
 import { PumpFunSDK } from "latest-pumpfun-sdk";
 import BN from "bn.js";
-import { createAndSendV0Tx } from "../txsExecutor";
+import { createAndSendV0Tx } from "../executor/txsExecutor";
 import { createLUT } from "./createLookupTable";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
@@ -27,7 +27,10 @@ import { privateKeys } from "./buyersKeys";
 
 dotenv.config();
 
-const connection = new Connection("https://mainnet.helius-rpc.com/?api-key=8b6b98fb-7c47-481b-a7dc-4c760ce43572", "confirmed");
+const connection = new Connection(
+  "https://mainnet.helius-rpc.com/?api-key=8b6b98fb-7c47-481b-a7dc-4c760ce43572",
+  "confirmed"
+);
 const signer = Keypair.fromSecretKey(bs58.decode(process.env.SIGNER_KEY!));
 const sdk = new PumpFunSDK(connection);
 const lookup_address = new PublicKey(
@@ -68,30 +71,29 @@ const normalbundleTxs = async () => {
     }
   }
 
+  console.log("helooooo---");
+  let latestBlockhash = await connection.getLatestBlockhash();
 
-     console.log("helooooo---")
-    let latestBlockhash = await connection.getLatestBlockhash();
+  const messageV0 = new TransactionMessage({
+    payerKey: signer.publicKey,
+    recentBlockhash: latestBlockhash.blockhash,
+    instructions: [...bundle_buy_itx],
+  }).compileToV0Message();
 
-    const messageV0 = new TransactionMessage({
-      payerKey: signer.publicKey,
-      recentBlockhash: latestBlockhash.blockhash,
-      instructions: [...bundle_buy_itx],
-    }).compileToV0Message();
+  const transaction = new VersionedTransaction(messageV0);
 
-        const transaction = new VersionedTransaction(messageV0);
+  transaction.sign([...all_signers]);
 
-        transaction.sign([...all_signers]);
+  //  const simulate = await connection.simulateTransaction(transaction);
+  //  console.log("here is simulation res---", simulate);
 
-    //  const simulate = await connection.simulateTransaction(transaction);
-    //  console.log("here is simulation res---", simulate);  
-
-     console.log("the transaction size is-----", transaction.serialize().byteLength)
-
+  console.log(
+    "without lookup tables the transaction size is-----",
+    transaction.serialize().byteLength
+  );
 };
 
 const lookupTxs = async () => {
-
-
   for (let i = 0; i < all_signers.length; i++) {
     const balance = await connection.getBalance(all_signers[i].publicKey);
 
@@ -102,53 +104,70 @@ const lookupTxs = async () => {
     );
   }
 
-     const lookup_address =  await createLUT(signer,connection);
-     console.log("here is teh lookup address---", lookup_address?.toBase58());
+  const lookup_address = await createLUT(signer, connection);
+  console.log("here is teh lookup address---", lookup_address?.toBase58());
 
-     if(!lookup_address) throw("lookup account creation failed!!")
+  if (!lookup_address) throw "lookup account creation failed!!";
 
   const lookupTableAccount = (
-      await connection.getAddressLookupTable(lookup_address)
+    await connection.getAddressLookupTable(lookup_address)
   ).value;
 
   if (lookupTableAccount == null) {
-      console.log("Lookup table account not found!");
+    console.log("Lookup table account not found!");
   }
 
-  const accounts: PublicKey[] = []; 
+  const accounts: PublicKey[] = [];
 
   // fetching all accounts for the lookup inster
   const global = new PublicKey("4wTV1YmiEkRvAtNtsSGPtUrqRYQMe5SKy2uB4Jjaxnjf");
-  const fee_recipent = new PublicKey("AVmoTthdrX6tKt4nDjco2D775W2YK3sDhxPcMmzUAmTY");
-  const bonding_curve = PublicKey.findProgramAddressSync([Buffer.from("bonding-curve"),mint.toBuffer()],program_id)[0];
-  const associated_bonding_curve = await getAssociatedTokenAddress(mint,bonding_curve,true);
-  const user_ata = await getAssociatedTokenAddress(mint,signer.publicKey);
-  const  creator_vault = PublicKey.findProgramAddressSync(
-      [Buffer.from("creator-vault"), creator.toBuffer()],
-      program_id,
+  const fee_recipent = new PublicKey(
+    "AVmoTthdrX6tKt4nDjco2D775W2YK3sDhxPcMmzUAmTY"
+  );
+  const bonding_curve = PublicKey.findProgramAddressSync(
+    [Buffer.from("bonding-curve"), mint.toBuffer()],
+    program_id
   )[0];
-  const event_authority = new PublicKey("Ce6TQqeHC9p8KetsN6JsjHK7UTZk7nasjjnr7XxXp9F1");
-  const global_volume_accumulator = new PublicKey("Hq2wp8uJ9jCPsYgNHex8RtqdvMPfVGoYwjvF1ATiwn2Y");
-  const user_volume_accumulator = new PublicKey("28GfGdLbF6o2qmTuBLrr5HUnYJdUsj8ZARDu26hQRyrG");
-  const fee_config = new PublicKey("8Wf5TiAheLUqBrKXeYg2JtAFFMWtKdG2BSFgqUcPVwTt");
+  const associated_bonding_curve = await getAssociatedTokenAddress(
+    mint,
+    bonding_curve,
+    true
+  );
+  const user_ata = await getAssociatedTokenAddress(mint, signer.publicKey);
+  const creator_vault = PublicKey.findProgramAddressSync(
+    [Buffer.from("creator-vault"), creator.toBuffer()],
+    program_id
+  )[0];
+  const event_authority = new PublicKey(
+    "Ce6TQqeHC9p8KetsN6JsjHK7UTZk7nasjjnr7XxXp9F1"
+  );
+  const global_volume_accumulator = new PublicKey(
+    "Hq2wp8uJ9jCPsYgNHex8RtqdvMPfVGoYwjvF1ATiwn2Y"
+  );
+  const user_volume_accumulator = new PublicKey(
+    "28GfGdLbF6o2qmTuBLrr5HUnYJdUsj8ZARDu26hQRyrG"
+  );
+  const fee_config = new PublicKey(
+    "8Wf5TiAheLUqBrKXeYg2JtAFFMWtKdG2BSFgqUcPVwTt"
+  );
 
   accounts.push(
-      ASSOCIATED_TOKEN_PROGRAM_ID,
-      TOKEN_PROGRAM_ID,
-      event_authority,
-      global,
-      program_id,
-      associated_bonding_curve,
-      bonding_curve,
-      SystemProgram.programId,
-      SYSVAR_RENT_PUBKEY,
-      signer.publicKey,
-      fee_config,
-      fee_recipent,
-      global_volume_accumulator,
-      user_volume_accumulator,
-      user_ata,
-      creator_vault
+    ASSOCIATED_TOKEN_PROGRAM_ID,
+    TOKEN_PROGRAM_ID,
+    event_authority,
+    global,
+    program_id,
+    associated_bonding_curve,
+    bonding_curve,
+    SystemProgram.programId,
+    SYSVAR_RENT_PUBKEY,
+    signer.publicKey,
+    fee_config,
+    fee_recipent,
+    global_volume_accumulator,
+    user_volume_accumulator,
+    user_ata,
+    creator_vault
   );
 
   // adding all the atas of all signers
@@ -168,13 +187,12 @@ const lookupTxs = async () => {
 };
 
 const bundleBuyWithLookup = async () => {
- 
-    const lookupTableAccount = (
-      await connection.getAddressLookupTable(lookup_address)
-    ).value;
+  const lookupTableAccount = (
+    await connection.getAddressLookupTable(lookup_address)
+  ).value;
 
-    if (!lookupTableAccount) throw "no account find---";
-    console.log("here is all address---", lookupTableAccount);
+  if (!lookupTableAccount) throw "no account find---";
+  console.log("here is all address---", lookupTableAccount);
 
   const solAmount = 0.0001;
   const bonding_curve_data = await sdk.fetchBondingCurve(mint);
@@ -201,38 +219,36 @@ const bundleBuyWithLookup = async () => {
     }
   }
 
+  console.log("helooooo---");
+  let latestBlockhash = await connection.getLatestBlockhash();
 
-     console.log("helooooo---")
-    let latestBlockhash = await connection.getLatestBlockhash();
+  const messageV0 = new TransactionMessage({
+    payerKey: signer.publicKey,
+    recentBlockhash: latestBlockhash.blockhash,
+    instructions: [...bundle_buy_itx],
+  }).compileToV0Message([lookupTableAccount]);
 
-    const messageV0 = new TransactionMessage({
-      payerKey: signer.publicKey,
-      recentBlockhash: latestBlockhash.blockhash,
-      instructions: [...bundle_buy_itx],
-    }).compileToV0Message([lookupTableAccount]);
+  const transaction = new VersionedTransaction(messageV0);
 
-        const transaction = new VersionedTransaction(messageV0);
+  transaction.sign([...all_signers, signer]);
 
-        transaction.sign([...all_signers,signer]);
+  try {
+    const simulate = await connection.simulateTransaction(transaction);
+    console.log("here is simulation res---", simulate);
 
-      try{
-     const simulate = await connection.simulateTransaction(transaction);
-     console.log("here is simulation res---", simulate);
-     
-     const sign = await connection.sendTransaction(transaction);
+    //  const sign = await connection.sendTransaction(transaction);
 
-     console.log("here is the signature----", sign);
-      } 
-      catch(e){
-        console.log("error--",e);
-      }
+    //  console.log("here is the signature----", sign);
+  } catch (e) {
+    console.log("error--", e);
+  }
 
-     console.log("without lookup tables the transaction size is -----", transaction.serialize().byteLength - 200)
-   
-
+  console.log(
+    "With ALT the Bundle transaction size is -----",
+    transaction.serialize().byteLength
+  );
 };
 
-// normalTxs();
 // lookupTxs();
-bundleBuyWithLookup();
 // normalbundleTxs();
+bundleBuyWithLookup();
